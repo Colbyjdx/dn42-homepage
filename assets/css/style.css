@@ -1,0 +1,39 @@
+.container {
+    max-width: 160rem;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    scroll-margin-top: 6rem;
+}
+
+.content {
+    margin-top: -6rem;
+}
+
+#map {
+    height: 700px;
+    width: 100%;
+    font-size: 12px;
+}
+
+table {
+    max-width: 100%;
+    overflow-x: scroll;
+    scrollbar-width: none;
+    display: block;
+}
+
+table::-webkit-scrollbar {
+    display: none;
+}
+
+nav {
+    position: sticky;
+    top: 0;
+    background-color: #fafafa;
+    z-index: 9999;
+}
+
+body.colorscheme-dark nav {
+    background-color: #212121;
+}

@@ -1,0 +1,34 @@
+baseURL = 'https://dn42.derix.dev/'
+languageCode = 'en-us'
+title = 'COLBY-NET DN42'
+theme = 'hugo-coder'
+
+[[module.mounts]]
+  includeFiles = 'ansible/hosts.yml'
+  source = 'data'
+  target = 'data'
+
+[params]
+  customCSS = ["css/style.css"]
+  colorScheme = 'auto'
+
+[[menu.main]]
+  name = "Map"
+  weight = 1
+  url = "/#node-map"
+[[menu.main]]
+  name = "Nodes"
+  weight = 1
+  url  = "/#nodes"
+[[menu.main]]
+  name = "Peering"
+  weight = 2
+  url = "/#peering"
+[[menu.main]]
+  name = "External Services"
+  weight = 3
+  url = "/#external-services"
+[[menu.main]]
+  name = "Network Design"
+  weight = 4
+  url = "/#network_design"

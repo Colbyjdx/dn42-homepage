@@ -1,0 +1,176 @@
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<div id="map"></div>
+
+<script>
+    const map = L.map('map').setView([22.5, 244], 2);
+    map.getRenderer(map).options.padding = 100;
+
+    L.tileLayer('tiles/{z}/{x}/{y}.png', {
+        maxZoom: 6,
+        minZoom: 3,
+        attribution: '&copy; <a href="https://www.thunderforest.com/">Thunderforest</a>, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    }).addTo(map);
+
+    let nodes = {
+{{ range $key, $value := .Site.Data.ansible.hosts.dn42.hosts }}
+    "{{ $key }}":{{ $value.latlng }},
+{{ end }}
+};
+
+    let connections = [
+{{ range $key, $value := .Site.Data.ansible.hosts.dn42.hosts }}
+    {{ range $value.igp_links }}["{{ $key }}","{{.}}"],{{ end }}
+{{ end }}
+];
+    // sort connections
+    connections = connections.map(connection => connection.sort());
+    
+    // remove duplicates
+    connections = connections.filter((connection, index, self) =>
+        index === self.findIndex((t) => (
+            t[0] === connection[0] && t[1] === connection[1]
+        ))
+    )   
+
+    // turn connections into latlngs
+    connections = connections.map(connection => [nodes[connection[0]], nodes[connection[1]]]);
+
+    // add a reversed connection for each connection
+    connections.forEach(connection => {
+        connections.push([connection[1], connection[0]]);
+    });
+
+    let lines = [];
+    for (const [key, value] of Object.entries(connections)) {
+        lines.push(L.polyline(value, {
+            color: 'black'
+        }).addTo(map));
+    }
+
+    // for any markers that have the same latlng, merge them into one marker
+    let mergedNodes = {};
+    for (const [key, value] of Object.entries(nodes)) {
+        if (mergedNodes[value]) {
+            mergedNodes[value].push(key);
+        } else {
+            mergedNodes[value] = [key];
+        }
+    }
+
+    let processedNodes = {};
+    for (const [key, value] of Object.entries(mergedNodes)) {
+        let latlng = key.split(",");
+        if (value.length > 1) {
+            processedNodes[value.join(", ")] = latlng;
+        } else {
+            processedNodes[value[0]] = latlng;
+        }
+    }
+    nodes = processedNodes;
+
+    const icon = L.icon({
+        iconUrl: '/images/marker-icon.png',
+        shadowUrl: '/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+    });
+    let markers = [];
+    for (const [key, value] of Object.entries(nodes)) {
+        markers.push(L.marker(value, {
+            icon: icon,
+        }).addTo(map).bindPopup(key, {
+            autoPan: false,
+        }));
+    }
+
+    function findClosestLng(targetLng, candidateLngs) {
+        return candidateLngs.reduce((prev, curr) => {
+            return Math.abs(curr - targetLng) < Math.abs(prev - targetLng) ? curr : prev;
+        });
+    }
+
+    function updateMap() {
+        // loops through each marker & line, and set its position to the closest wrapped position for the current map bounds
+        // maybe there's a better way to do this, but I couldn't find one, so this is what I came up with
+
+        // get current centre of the map
+        let centre = map.getCenter().lng;
+        markers.forEach(marker => {
+            let latlng = marker.getLatLng();
+            // find the one closest to the current centre of the map
+            let closestLng = findClosestLng(centre, [latlng.lng, latlng.lng + 360, latlng.lng - 360]);
+            // set the marker position to the closest
+            if (latlng.lng != closestLng) {
+                if (marker.isPopupOpen()) {
+                    marker.closePopup();
+                    marker.setLatLng([latlng.lat, closestLng]);
+                    marker.openPopup();
+                } else {
+                    marker.setLatLng([latlng.lat, closestLng]);
+                }
+            }
+        });
+
+        lines.forEach(line => {
+            let latlngs = line.getLatLngs();
+            let source = latlngs[0];
+            let dest = latlngs[1];
+            // find the closest source to the current centre of the map
+            let closestSrcLng = findClosestLng(centre, [source.lng, source.lng + 360, source.lng - 360]);
+            // find the closest dest to the closest source
+            let closestDstLng = findClosestLng(closestSrcLng, [dest.lng, dest.lng + 360, dest.lng - 360]);
+            // set the line position to the closest source and dest
+            if (source.lng != closestSrcLng || dest.lng != closestDstLng) {
+                line.setLatLngs([
+                    [source.lat, closestSrcLng],
+                    [dest.lat, closestDstLng]
+                ]);
+            }
+        });
+    }
+
+    map.on('move', function() {
+        updateMap();
+    });
+
+    updateMap();
+
+    map.on('popupopen', function(e) {
+        let marker = e.popup._source;
+        latlng = marker.getLatLng();
+        // highlight all lines that have this marker as a source or dest
+        lines.forEach(line => {
+            let latlngs = line.getLatLngs();
+            let source = latlngs[0];
+            let dest = latlngs[1];
+            if (
+                source.lat.toFixed(4) == latlng.lat.toFixed(4) && source.lng.toFixed(4) == latlng.lng.toFixed(4) ||
+                dest.lat.toFixed(4) == latlng.lat.toFixed(4) && dest.lng.toFixed(4) == latlng.lng.toFixed(4) ||
+                source.lat.toFixed(4) == latlng.lat.toFixed(4) && (source.lng + 360).toFixed(4) == latlng.lng.toFixed(4) ||
+                dest.lat.toFixed(4) == latlng.lat.toFixed(4) && (dest.lng + 360).toFixed(4) == latlng.lng.toFixed(4) ||
+                source.lat.toFixed(4) == latlng.lat.toFixed(4) && (source.lng - 360).toFixed(4) == latlng.lng.toFixed(4) ||
+                dest.lat.toFixed(4) == latlng.lat.toFixed(4) && (dest.lng - 360).toFixed(4) == latlng.lng.toFixed(4)
+            ) {
+                line.setStyle({
+                    color: 'red'
+                });
+            }
+        });
+    });
+
+    map.on('popupclose', function(e) {
+        let marker = e.popup._source;
+        // unhighlight all lines
+        lines.forEach(line => {
+            line.setStyle({
+                color: 'black'
+            });
+        });
+    });
+
+</script>

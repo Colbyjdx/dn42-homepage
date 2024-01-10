@@ -1,0 +1,26 @@
+<table>
+    <thead>
+        <tr>
+            <th>Hostname</th>
+            <th>Location</th>
+            <th>Public IPv4</th>
+            <th>Public IPv6</th>
+            <th>DN42 IPs</th>
+            <th>IPv6 Link Local</th>
+            <th>WG Public Key</th>
+        </tr>
+    </thead>
+    <tbody>
+{{ range $value := sort .Site.Data.ansible.hosts.dn42.hosts "node_id" }}
+        <tr>
+            <td><code>{{ $value.ansible_host }}</code></td>
+            <td>{{ $value.location }}</td>
+            <td>{{ if eq $value.public_ipv4 "open" }}✓{{ else if eq $value.public_ipv4 "nat" }}∼{{ else }}✗{{ end }}</td>
+            <td>{{ if eq $value.public_ipv6 "open" }}✓{{ else if eq $value.public_ipv6 "nat" }}∼{{ else }}✗{{ end }}</td>
+            <td>{{ if $value.dn42_v6_only }}IPv6 Only{{ else }}Dual Stack{{ end }}</td>
+            <td><code>{{ $value.link_local6 }}</code></td>
+            <td><code>{{ $value.wg_public }}</code></td>
+        </tr>
+{{ end }}
+    </tbody>
+</table>

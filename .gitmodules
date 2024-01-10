@@ -1,0 +1,7 @@
+[submodule "themes/hugo-coder"]
+	path = themes/hugo-coder
+	url = https://github.com/luizdepra/hugo-coder.git
+[submodule "data/ansible"]
+	path = data/ansible
+	url = https://github.com/Colbyjdx/dn42-ansible.git
+	branch = main
