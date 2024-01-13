@@ -17,15 +17,18 @@ integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""><
 
     let nodes = {
 {{ range $key, $value := .Site.Data.ansible.hosts.dn42.hosts }}
-    "{{ $key }}":{{ $value.latlng }},
+        "{{ $key }}":{'loc': {{ $value.latlng }}, 'lite': {{ isset $value "dn42_v6_only" }}},
 {{ end }}
-};
+    };
+
+    // extract loc from nodes
+    let locnodes = Object.fromEntries(Object.entries(nodes).map(([k, v]) => [k, v.loc]));
 
     let connections = [
 {{ range $key, $value := .Site.Data.ansible.hosts.dn42.hosts }}
-    {{ range $value.igp_links }}["{{ $key }}","{{.}}"],{{ end }}
+        {{ range $value.igp_links }}["{{ $key }}","{{.}}"],{{ end }}
 {{ end }}
-];
+    ];
     // sort connections
     connections = connections.map(connection => connection.sort());
     
@@ -37,7 +40,7 @@ integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""><
     )   
 
     // turn connections into latlngs
-    connections = connections.map(connection => [nodes[connection[0]], nodes[connection[1]]]);
+    connections = connections.map(connection => [locnodes[connection[0]], locnodes[connection[1]]]);
 
     // add a reversed connection for each connection
     connections.forEach(connection => {
@@ -53,7 +56,7 @@ integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""><
 
     // for any markers that have the same latlng, merge them into one marker
     let mergedNodes = {};
-    for (const [key, value] of Object.entries(nodes)) {
+    for (const [key, value] of Object.entries(locnodes)) {
         if (mergedNodes[value]) {
             mergedNodes[value].push(key);
         } else {
@@ -70,7 +73,7 @@ integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""><
             processedNodes[value[0]] = latlng;
         }
     }
-    nodes = processedNodes;
+    locnodes = processedNodes;
 
     const icon = L.icon({
         iconUrl: '/images/marker-icon.png',
@@ -79,13 +82,29 @@ integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""><
         iconAnchor: [12, 41],
         popupAnchor: [1, -34],
     });
+    const icon_alt = L.icon({
+        iconUrl: '/images/marker-icon-alt.png',
+        shadowUrl: '/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+    });
     let markers = [];
-    for (const [key, value] of Object.entries(nodes)) {
-        markers.push(L.marker(value, {
-            icon: icon,
+    for (const [key, value] of Object.entries(locnodes)) {
+        let contains_full_node = false;
+        let contains_lite_node = false;
+        let markernodes = key.split(", ");
+        markernodes.forEach(markernode => {
+            contains_full_node = contains_full_node || !nodes[markernode].lite;
+            contains_lite_node = contains_lite_node || nodes[markernode].lite;
+        });
+
+        let marker = L.marker(value, {
+            icon: contains_full_node ? icon : icon_alt,
         }).addTo(map).bindPopup(key, {
             autoPan: false,
-        }));
+        });
+        markers.push(marker);
     }
 
     function findClosestLng(targetLng, candidateLngs) {
