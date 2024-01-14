@@ -5,3 +5,5 @@ resources/_gen/
 
 .hugo_build.lock
 *.tar.gz
+
+node_modules/

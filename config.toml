@@ -8,6 +8,14 @@ theme = 'hugo-coder'
   source = 'data'
   target = 'data'
 
+[[module.mounts]]
+  source = 'node_modules/leaflet/dist'
+  target = 'assets/leaflet'
+
+[[module.mounts]]
+  source = 'assets'
+  target = 'assets'
+
 [params]
   customCSS = ["css/style.css"]
   colorScheme = 'auto'

@@ -1,0 +1,11 @@
+{
+  "comments": {
+    "dependencies": {},
+    "devDependencies": {}
+  },
+  "dependencies": {
+    "leaflet": "^1.9.4"
+  },
+  "name": "dn42-homepage",
+  "version": "0.1.0"
+}
