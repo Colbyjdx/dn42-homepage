@@ -1,5 +1,5 @@
 ---
-title: "COLBY-NET DN42 - AS4242422558"
+title: "COLBY-NET DN42 · AS4242422558"
 description: "COLBY-NET DN42 - An experiment in global networking"
 draft: "false"
 ---
