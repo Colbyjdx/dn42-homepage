@@ -26,9 +26,9 @@ Reach out to me on IRC (colby@hackint) to peer!
 
 # External Services
 - Looking Glass ([Clearnet](https://lg.dn42.derix.dev/), [DN42](https://lg.derix.dn42/))
-- Uptime Monitor (coming soon)
+- Uptime Monitor ([Clearnet](https://uptime.dn42.derix.dev/status/dn42))
 - Metrics Monitor (coming soon)
-- Authoritive DNS servers for derix.dn42 (ns1.derix.dn42\, ns2.derix.dn42)
+- Anycasted authoritive DNS server for derix.dn42 (ns.derix.dn42)
 
 # Network Design
 My DN42 network consists of two distinct types of nodes - those which are dual-stack (KVM-based), and IPv6-only (OpenVZ-based). Due to compromises in OpenVZ, IPv4 is not available on such nodes.
