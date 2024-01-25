@@ -29,6 +29,10 @@ Reach out to me on IRC (colby@hackint) to peer!
 - Uptime Monitor ([Clearnet](https://uptime.dn42.derix.dev/status/dn42))
 - Metrics Monitor (coming soon)
 - Anycasted authoritive DNS server for derix.dn42 (ns.derix.dn42)
+- Anycasted DNS64 resolver & NAT64 gateway
+    - NAT64 prefix: `fd93:6001:6ed9:6464::/96`
+    - DNS64 resolver: `fd93:6001:6ed9:ffff::1`
+    - No clearnet access
 
 # Network Design
 My DN42 network consists of two distinct types of nodes - those which are dual-stack (KVM-based), and IPv6-only (OpenVZ-based). Due to compromises in OpenVZ, IPv4 is not available on such nodes.
