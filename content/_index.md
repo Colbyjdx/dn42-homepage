@@ -15,6 +15,7 @@ draft: "false"
 - Wireguard
 - Link-local IPv6 address
 - Reasonable latency
+- Max 1 peering per node
 - Wireguard port is 20000 + last 4 of your ASN
 - DN42 Dual-stack nodes
     - Multi-Protocol BGP
@@ -22,7 +23,7 @@ draft: "false"
 - DN42 IPv6-only nodes
     - No IPv4 channel configured
 
-Reach out to me on IRC (colby@hackint) to peer!
+Reach out to me on IRC (colby@hackint) or email (check the registry) to peer!
 
 # External Services
 - Looking Glass ([Clearnet](https://lg.dn42.derix.dev/), [DN42](https://lg.derix.dn42/))
